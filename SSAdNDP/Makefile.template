@@ -1,0 +1,12 @@
+#use: ./mkmf -t Makefile.template -p ssadndp.exe
+#to generate a proper makefile
+
+#or: perl mkmf -t Makefile.template -p ssadndp.exe
+#if perl is not in /usr/bin/perl
+
+MKLROOT=/share/compilers/intel/oneapi/mkl/2022.0.1
+
+FC=ifort
+LD=ifort
+FFLAGS=  -qopenmp -I${MKLROOT}/include/intel64/lp64/
+LDFLAGS=-L${MKLROOT}/lib/intel64/ -lmkl_core -lmkl_intel_lp64 -lmkl_sequential -lmkl_blas95_lp64 -lmkl_lapack95_lp64 -qopenmp

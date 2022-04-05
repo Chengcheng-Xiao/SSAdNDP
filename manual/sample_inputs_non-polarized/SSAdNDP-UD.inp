@@ -1,0 +1,29 @@
+USER-DIRECTED SEARCH INPUT FILE
+Prepare files for visualization: T/F?
+F
+Number of fragments to search on:
+2
+Number of centers on fragment 1:
+6
+Atom numbers, cell a,b,c:
+1, 0 0 0
+2, 0 0 0
+7, 0 -1 0
+5, 0 -1 0
+6, -1 0 0
+4, -1 0 0
+Number of bonds on fragment 1:
+1
+Number of centers on fragment 2:
+7
+Atom numbers, cell a,b,c:
+1, 0 0 0   
+2, 0 0 0
+3, 0 0 0
+4, 0 0 0
+5, 0 0 0
+6, 0 0 0
+7, 0 0 0
+Number of bonds on fragment 2:
+1
+

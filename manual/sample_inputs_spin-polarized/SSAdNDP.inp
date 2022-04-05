@@ -1,0 +1,14 @@
+GENERAL SEARCH INPUT FILE
+Prepare files for visualization: T/F?
+F
+Number of different types of bonds in general search (spin 1): 
+2
+Number of centers, ON threshold, Distance threshold (spin 1):
+1 0.8 0.
+2 0.9 7.
+Number of different types of bonds in general search (spin 2):
+2
+Number of centers, ON threshold, Distance threshold (spin 2):
+1 0.8 0.
+2 0.89 7.
+
