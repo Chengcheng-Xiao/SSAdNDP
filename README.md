@@ -78,12 +78,17 @@ The workflow of SSAdNDP is:
 
 Please checkout `SSAdNDP_manual.pdf` under `manual`.
 
-## How to cite
+## References
 
 The author request that anyone who downloads and utilizes the code cite:
 
-  Dunnington, B. D.; Schmidt, J. R.,
-  *Generalization of Natural Bond Orbital Analysis to Periodic Systems: Applications to Solids and Surfaces via Plane-Wave Density Functional Theory*, [J. Chem. Theory Comput., 2012, 8 (6), pp 1902–1911](http://dx.doi.org/ 10.1021/ct300002t)
+[1] [Solid state adaptive natural density partitioning: a tool for deciphering multi-center bonding in periodic systems](http://pubs.rsc.org/en/content/articlelanding/2013/cp/c3cp50350j#!divAbstract) Timur R. Galeev, Benjamin D. Dunnington, J. R. Schmidt, and Alexander I. Boldyrev *Phys. Chem. Chem. Phys.*, 2013, **15**, 5022-5029
+
+[2] [Developing paradigms of chemical bonding: adaptive natural density partitioning](http://pubs.rsc.org/en/Content/ArticleLanding/2008/CP/b804083d#!divAbstract) Dmitry Yu. Zubarev, and Alexander I. Boldyrev *Phys. Chem. Chem. Phys.*, 2008, **10**, 5207-5217
+
+[3] [Generalization of Natural Bond Orbital Analysis to Periodic Systems: Applications to Solids and Surfaces via Plane-Wave Density Functional Theory](http://pubs.acs.org/doi/abs/10.1021/ct300002t) Benjamin D. Dunnington and J. R. Schmidt *J. Chem. Theory Comput.*, 2012, **8**, 1902-1911
+
+[4] See [NBO references and bibliography](http://www.chem.wisc.edu/~nbo5/biblio.htm)
 
 ## License
 
