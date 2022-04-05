@@ -1315,6 +1315,7 @@ MODULE ssadndp_module
             read(19,*), (lvecs(ivec,idmn), idmn=1,3)
           end do
           read (19,*)
+          read (19,*)
           read (19,*), coordtype
 
           if (coordtype=='c'.or.coordtype=='C'.or.coordtype=='k'.or.coordtype=='K') then
