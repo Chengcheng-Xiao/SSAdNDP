@@ -20,11 +20,11 @@ This package comes in three part:
 The code is written in `Fortran 90`, and requires the `BLAS95` and `LAPACK95` libraries as implemented in `MKL`, as well as libraries used for OpenMP parallelization.  
 
 ### Installing DFT interfaces
-1. VASP
+1. VASP (compatible with VASP v5.4.4)
   * copy `interfaces/VASP_interface/projection_output.F` into directory containing VASP source code `./scr`.
-  * apply `proj_VASP.patch` by putting it in VASP source code's root dir and:
+  * apply `interfaces/VASP_interface/proj_VASP_5.4.patch` by putting it in VASP source code's root directory and:
   ```
-  patch -p0 < proj_VASP.patch
+  patch -p0 < proj_VASP_5.4.patch
   ```
   * Compile VASP as usual.
 
