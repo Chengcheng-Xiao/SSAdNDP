@@ -1,8 +1,10 @@
 # Solid State Adaptive Natural Density Partitioning (SSAdNDP)
 *This project is originally written by Alexander Boldyrev @ Utah State University.
-Forked from [🔗LINK](http://ion.chem.usu.edu/~boldyrev/ssadndp.php).*
+Forked from [http://ion.chem.usu.edu/~boldyrev/ssadndp.php](http://ion.chem.usu.edu/~boldyrev/ssadndp.php).*
 
 *The source code has been updated by replacing several deprecated routine-calling scheme, and a modified Makefile for it to work with newest intel compiler and MKL version 2022.1.1*
+
+---
 
 Solid State Adaptive Natural Density Partitioning (SSAdNDP) [1] is an extension of the [AdNDP method](http://ion.chem.usu.edu/~boldyrev/adndp.php) [2] to periodic systems and as such was derived from [periodic implementation](http://schmidt.chem.wisc.edu/nbosoftware) [3] of the [Natural Bond Orbital (NBO)](http://nbo6.chem.wisc.edu/) analysis [4]. SSAdNDP allows the interpretation of chemical bonding in systems with translational symmetry in terms of classical lone pairs and two-center bonds, as well as multi-center delocalized bonding. Similar to AdNDP, the bonding pattern is expressed as a set of *n*-center - 2-electron (*n*c-2e) bonds. See the [AdNDP page](http://ion.chem.usu.edu/~boldyrev/adndp.php) and [AdNDP](http://pubs.rsc.org/en/Content/ArticleLanding/2008/CP/b804083d#!divAbstract) and [SSAdNDP](http://pubs.rsc.org/en/content/articlelanding/2013/cp/c3cp50350j#!divAbstract) publications [1,2] for details on this approach to interpretation of chemical bonding.
 
@@ -58,25 +60,30 @@ The workflow of SSAdNDP is:
     1. Put `LNBO=.T.` into `INCAR`. Make sure `NPAR` is the default value and `ISYM=0` is set.
     2. Run VASP as usual and the code will generate `wavefunction.dat`.
 2. Projecting the wavefunctions onto atomic orbitals (basis.inp) to get the projection coefficients (NBO.out)
-    1. Construct a `basis.inp` using [basisexchange](https://www.basissetexchange.org) (note: choose wisely for this is very important and can have huge impact on later analysis). Remember to put `****` at the begining of the first species and make sure the ordering of species matches with the ordering of VASP's `POTCAR`.
+    1. Construct a `basis.inp` using [basisexchange](https://www.basissetexchange.org).
+
+      __NOTE: Remember to put `****` at the beginning of the first species and make sure the ordering of species matches the ordering of VASP's `POTCAR` file.__
+
+      **NOTE: A suitable basis set is very important and can have huge impact on later analysis.**
     2. Run `projection.exe` by:
     ```
     projection.exe basis.inp wavefunction.dat NBO.out
     ```
 3. Calculate the NBOs with predefined parameters (SSAdNDP*.inp)
-    1. Construct a `SSAdNDP.inp` (or `SSAdNDP-UD.inp`) file for general search (or user-directed search). A set of exemplary inputs can be found in `manual`.
-    2. Run SSAdNDP to generate `vis_*_bond.out` by (note `ulimit -s unlmited` maybe needed):
+    1. Construct a `SSAdNDP.inp` (or `SSAdNDP-UD.inp`) file for general search (or user-directed search). A set of exemplary inputs can be found in [`manual` folde](https://github.com/Chengcheng-Xiao/SSAdNDP/tree/master/manual).
+    2. Run SSAdNDP to generate `vis_*_bond.out` by:
     ```
     ssadndp.exe SSAdNDP.inp
     ```
-4. (optional) Plot the NBOs:
+      **NOTE: `ulimit -s unlmited` maybe needed when running `ssadndp.exe`.**
+4. (*optional*) Plot the NBOs:
     1. run visualization program by:
     ```
     visual.exe vis_ud_bonds.out
     ```
     2. use vesta to visualize, first open the `lattice_vec.cube` and unselect `show section`, then `Edit` -> `Edit Data` -> `phase` -> `Import` to import `*_bond_*.cube`. Select the first entry of `*_bond_*.cube` and change the three numbers under `this layer` to `0.5 0.5 0.5`.
 
-Please checkout `SSAdNDP_manual.pdf` under `manual`.
+Please checkout [`SSAdNDP_manual.pdf`](https://github.com/Chengcheng-Xiao/SSAdNDP/blob/master/manual/SSAdNDP_manual.pdf).
 
 ## References
 
@@ -92,4 +99,4 @@ The author request that anyone who downloads and utilizes the code cite:
 
 ## License
 
-  This project is licensed under the GNU License - see the `LICENSE.md` for details
+  This project is licensed under the GNU License - see the [`LICENSE.md`](https://github.com/Chengcheng-Xiao/SSAdNDP/blob/master/LICENSE.md) for details.
