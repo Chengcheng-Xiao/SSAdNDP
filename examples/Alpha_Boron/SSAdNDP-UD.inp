@@ -1,0 +1,115 @@
+USER-DIRECTED SEARCH INPUT FILE
+Prepare files for visualization: T/F?
+T
+Number of fragments to search on:
+12
+Number of centers on fragment 1:
+3
+Atom numbers, cell a,b,c:
+1, 0 0 0
+5, 0 0 0
+7, 0 0 0
+Number of bonds on fragment 1:
+1
+Number of centers on fragment 2:
+3
+Atom numbers, cell a,b,c:
+2, 0 0 0
+7, 0 0 0
+3, 1 0 0
+Number of bonds on fragment 2:
+1
+Number of centers on fragment 3:
+3
+Atom numbers, cell a,b,c:
+7, 0 0 0
+8, 0 0 0
+4, 1 0 0
+Number of bonds on fragment 3:
+1
+Number of centers on fragment 4:
+3
+Atom numbers, cell a,b,c:
+3, 0 0 0
+5, 0 0 0
+6, 0 0 0
+Number of bonds on fragment 4:
+1
+Number of centers on fragment 5:
+3
+Atom numbers, cell a,b,c:
+4, 0 0 0
+6, 0 0 0
+1, 0 1 0
+Number of bonds on fragment 5:
+1
+Number of centers on fragment 6:
+3
+Atom numbers, cell a,b,c:
+6, 0 0 0
+8, 0 0 0
+2, 0 1 0
+Number of bonds on fragment 6:
+1
+Number of centers on fragment 7:
+4
+Atom numbers, cell a,b,c:
+5, 0 0 0
+7, 0 0 0
+6, 0 0 0
+8, 0 0 0
+Number of bonds on fragment 7:
+1
+Number of centers on fragment 8:
+4
+Atom numbers, cell a,b,c:
+1, 0 0 0
+2, 0 0 0
+7, 0 0 0
+6, 0 -1 0
+Number of bonds on fragment 8:
+1
+Number of centers on fragment 9:
+4
+Atom numbers, cell a,b,c:
+7, 0 0 0
+3, 1 0 0
+4, 1 0 0
+6, 1 0 0
+Number of bonds on fragment 9:
+1
+Number of centers on fragment 10:
+6
+Atom numbers, cell a,b,c:
+1, 0 0 0
+5, 0 0 0
+3, 0 0 0
+2, -1 0 0
+4, 0 -1 0
+8, -1 -1 0
+Number of bonds on fragment 10:
+1
+Number of centers on fragment 11:
+7
+Atom numbers, cell a,b,c:
+1, 0 0 0
+2, 0 0 0
+5, 0 0 0
+7, 0 0 0
+8, 0 0 0
+3, 1 0 0
+4, 1 0 0
+Number of bonds on fragment 11:
+1
+Number of centers on fragment 12:
+7
+Atom numbers, cell a,b,c:
+3, 0 0 0
+4, 0 0 0
+5, 0 0 0
+6, 0 0 0
+8, 0 0 0
+1, 0 1 0
+2, 0 1 0
+Number of bonds on fragment 12:
+1

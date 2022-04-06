@@ -1,0 +1,56 @@
+SYSTEM = HTP_electride
+
+Start parameter for this Run:
+  NWRITE =      1;   LPETIM=F    write-flag & time
+  ISTART =      0    job   : 0-new  1-cont  2-samecu
+  LWAVE = T
+  LCHARG = F
+  LAECHG = F
+  LELF = F
+  LNBO = .T.
+
+#LVHAR = .F.
+#LDIPOL = T
+#IDIPOL = 3
+#DIPOL = 0.5 0.5 0.5
+
+#Kpoints automation
+#  KGAMMA = T
+#  KSPACING = 0.15
+
+ISYM = 0
+Electronic Relaxation 1
+  GGA_COMPAT=.FALSE.
+  NELM   =    200
+  NELMIN =   3
+# NELMDL=-10
+  EDIFFG = -0.01
+  EDIFF  = 1E-5
+  PREC   =  A
+
+Electronic Relaxation 2:
+  ALGO   = N ! Normal     algorithm
+  LDIAG  = T    sub-space diagonalisation
+  LREAL  = F
+  LASPH  = T
+
+Ionic Relaxation
+  NSW    =   0   for static cal/.
+  NBLOCK =   1 ;   KBLOCK =      5    inner block; outer block
+  IBRION =  -1  ionic relax: 0-MD 1-quasi-New 2-CG
+  POTIM  =  0.5
+  LCORR  =      T    Harris-correction to forces
+  ENCUT = 520
+#  ISIF = 3
+
+
+DOS related values:
+#  ISMEAR  = -5
+  EMIN    = -15
+  EMAX    = 15
+  LORBIT  = 11
+  NEDOS   = 3000
+
+
+ISMEAR = 0
+SIGMA = 0.05
