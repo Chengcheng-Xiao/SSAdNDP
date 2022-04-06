@@ -1,5 +1,7 @@
 Copyright 2012,2013 Benjamin Dunnington and J.R. Schmidt
+
 Copyright 2014 Alexander Boldyrev
+
 Copyright 2022 Chengcheng Xiao
 
 This program is free software: you can redistribute it and/or modify
