@@ -1,8 +1,4 @@
 # Solid State Adaptive Natural Density Partitioning (SSAdNDP)
-*This project is originally written by Alexander Boldyrev @ Utah State University.
-Forked from [http://ion.chem.usu.edu/~boldyrev/ssadndp.php](http://ion.chem.usu.edu/~boldyrev/ssadndp.php).*
-
-*The source code has been updated by replacing several deprecated routine-calling scheme, and a modified Makefile for it to work with newest intel compiler and MKL version 2022.1.1*
 
 ---
 
@@ -84,6 +80,15 @@ The workflow of SSAdNDP is:
     2. use vesta to visualize, first open the `lattice_vec.cube` and unselect `show section`, then `Edit` -> `Edit Data` -> `phase` -> `Import` to import `*_bond_*.cube`. Select the first entry of `*_bond_*.cube` and change the three numbers under `this layer` to `0.5 0.5 0.5`.
 
 Please checkout [`SSAdNDP_manual.pdf`](https://github.com/Chengcheng-Xiao/SSAdNDP/blob/master/manual/SSAdNDP_manual.pdf).
+
+## History
+
+This project is originally written by Prof. Alexander Boldyrev's group @ Utah
+State University based on the periodic-NBO code developed by Prof. J. R.
+Schmidt's group @ University of Wisconsin-Madison.
+
+<!-- Forked from [http://ion.chem.usu.edu/~boldyrev/ssadndp.php](http://ion.chem.usu.edu/~boldyrev/ssadndp.php) (no longer maintained). -->
+<!-- *The source code has been updated by replacing several deprecated routine-calling scheme, and a modified Makefile for it to work with newest intel compiler and MKL version 2022.1.1* -->
 
 ## References
 
