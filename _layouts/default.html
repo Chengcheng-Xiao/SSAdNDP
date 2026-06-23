@@ -18,12 +18,21 @@
 </footer>
 
 <script>
+  const toggle = document.querySelector('.nav-toggle');
+  const navLinks = document.querySelector('.nav-links');
+  if (toggle) {
+    toggle.addEventListener('click', () => {
+      navLinks.classList.toggle('open');
+      toggle.classList.toggle('open');
+    });
+  }
+
   const sections = document.querySelectorAll('section[id]');
-  const navLinks = document.querySelectorAll('nav a');
+  const navAnchors = document.querySelectorAll('nav a');
   const observer = new IntersectionObserver(entries => {
     entries.forEach(e => {
       if (e.isIntersecting) {
-        navLinks.forEach(a => a.classList.remove('active'));
+        navAnchors.forEach(a => a.classList.remove('active'));
         const active = document.querySelector(`nav a[href="#${e.target.id}"]`);
         if (active) active.classList.add('active');
       }
