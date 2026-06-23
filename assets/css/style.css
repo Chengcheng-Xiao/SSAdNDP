@@ -221,7 +221,7 @@ p code, li code {
 .steps li {
   counter-increment: step;
   display: grid;
-  grid-template-columns: 32px 1fr;
+  grid-template-columns: 32px minmax(0, 1fr);
   gap: 0 16px;
   margin-bottom: 28px;
 }
