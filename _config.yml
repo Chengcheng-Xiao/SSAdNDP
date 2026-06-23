@@ -1,0 +1,8 @@
+title: SSAdNDP
+description: Solid State Adaptive Natural Density Partitioning
+baseurl: ""
+url: ""
+
+collections:
+  sections:
+    output: false
