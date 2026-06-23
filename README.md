@@ -1,8 +1,6 @@
 # Solid State Adaptive Natural Density Partitioning (SSAdNDP)
 
----
-
-Solid State Adaptive Natural Density Partitioning (SSAdNDP) [1] is an extension of the [AdNDP method](http://ion.chem.usu.edu/~boldyrev/adndp.php) [2] to periodic systems and as such was derived from [periodic implementation](http://schmidt.chem.wisc.edu/nbosoftware) [3] of the [Natural Bond Orbital (NBO)](http://nbo6.chem.wisc.edu/) analysis [4]. SSAdNDP allows the interpretation of chemical bonding in systems with translational symmetry in terms of classical lone pairs and two-center bonds, as well as multi-center delocalized bonding. Similar to AdNDP, the bonding pattern is expressed as a set of *n*-center - 2-electron (*n*c-2e) bonds. See the [AdNDP page](http://ion.chem.usu.edu/~boldyrev/adndp.php) and [AdNDP](http://pubs.rsc.org/en/Content/ArticleLanding/2008/CP/b804083d#!divAbstract) and [SSAdNDP](http://pubs.rsc.org/en/content/articlelanding/2013/cp/c3cp50350j#!divAbstract) publications [1,2] for details on this approach to interpretation of chemical bonding.
+Solid State Adaptive Natural Density Partitioning (SSAdNDP) [1] is an extension of the [AdNDP method](https://zenodo.org/records/3252298) [2] to periodic systems and as such was derived from [periodic implementation](http://schmidt.chem.wisc.edu/nbosoftware) [3] of the [Natural Bond Orbital (NBO)](http://nbo6.chem.wisc.edu/) analysis [4]. SSAdNDP allows the interpretation of chemical bonding in systems with translational symmetry in terms of classical lone pairs and two-center bonds, as well as multi-center delocalized bonding. Similar to AdNDP, the bonding pattern is expressed as a set of *n*-center - 2-electron (*n*c-2e) bonds. See the [AdNDP page](https://zenodo.org/records/3252298) and [AdNDP](http://pubs.rsc.org/en/Content/ArticleLanding/2008/CP/b804083d#!divAbstract) and [SSAdNDP](http://pubs.rsc.org/en/content/articlelanding/2013/cp/c3cp50350j#!divAbstract) publications [1,2] for details on this approach to interpretation of chemical bonding.
 
 ## Getting Started
 
@@ -49,30 +47,33 @@ ifort visual.f90 -o visual.exe
 ```
 
 
-
 ## Usage
 The workflow of SSAdNDP is:
 1. Calculate the system with DFT code and generate the wavefunctions (wavefunction.dat)
     1. Put `LNBO=.T.` into `INCAR`. Make sure `NPAR` is the default value and `ISYM=0` is set.
     2. Run VASP as usual and the code will generate `wavefunction.dat`.
 2. Projecting the wavefunctions onto atomic orbitals (basis.inp) to get the projection coefficients (NBO.out)
+
     1. Construct a `basis.inp` using [basisexchange](https://www.basissetexchange.org).
-
-      __NOTE: Remember to put `****` at the beginning of the first species and make sure the ordering of species matches the ordering of VASP's `POTCAR` file.__
-
-      **NOTE: A suitable basis set is very important and can have huge impact on later analysis.**
+    
     2. Run `projection.exe` by:
+    
     ```
     projection.exe basis.inp wavefunction.dat NBO.out
     ```
+  > [!NOTE]
+  > 1. remember to put `****` at the beginning of the first species and make sure the ordering of species matches the ordering of VASP's `POTCAR` file.
+  > 2. A suitable basis set is very important and can have huge impact on later analysis.
+    
 3. Calculate the NBOs with predefined parameters (SSAdNDP*.inp)
-    1. Construct a `SSAdNDP.inp` (or `SSAdNDP-UD.inp`) file for general search (or user-directed search). A set of exemplary inputs can be found in [`manual` folde](https://github.com/Chengcheng-Xiao/SSAdNDP/tree/master/manual).
+    1. Construct a `SSAdNDP.inp` (or `SSAdNDP-UD.inp`) file for general search (or user-directed search). A set of exemplary inputs can be found in [`manual` folder](https://github.com/Chengcheng-Xiao/SSAdNDP/tree/master/manual).
     2. Run SSAdNDP to generate `vis_*_bond.out` by:
     ```
     ssadndp.exe SSAdNDP.inp
     ```
-      **NOTE: `ulimit -s unlmited` maybe needed when running `ssadndp.exe`.**
-4. (*optional*) Plot the NBOs:
+  > [!NOTE]
+  > `ulimit -s unlmited` maybe needed when running `ssadndp.exe`.
+5. (*optional*) Plot the NBOs:
     1. run visualization program by:
     ```
     visual.exe vis_ud_bonds.out
