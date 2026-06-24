@@ -4,7 +4,7 @@
 #or: perl mkmf -t Makefile.template -p ssadndp.exe
 #if perl is not in /usr/bin/perl
 
-MKLROOT=/share/compilers/intel/oneapi/mkl/2022.0.1
+MKLROOT=/common/intel/oneapi/mkl/2024.1
 
 FC=ifort
 LD=ifort
