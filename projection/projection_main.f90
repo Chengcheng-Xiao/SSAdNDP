@@ -7,8 +7,8 @@ PROGRAM projection_main
   USE blas95
   IMPLICIT NONE
 
-  CHARACTER(128)  ::  basis_fn, VASP_fn, NBO_fn, mat_fn
-
+  CHARACTER(128)  ::  basis_fn, VASP_fn, NBO_fn
+  CHARACTER(64)   ::  mat_fn
 
   TYPE(AO_function), ALLOCATABLE :: AO_basis(:)
 
@@ -16,9 +16,12 @@ PROGRAM projection_main
 
   COMPLEX*16,ALLOCATABLE   ::  PAW_overlap(:,:,:)
   COMPLEX*16,ALLOCATABLE   ::  bloch_band_coeff(:,:,:,:)
-  COMPLEX*16,ALLOCATABLE   ::  AO_PW_overlap(:,:,:)
+  !COMPLEX*16,ALLOCATABLE   ::  AO_PW_overlap(:,:,:)
+  COMPLEX*16,ALLOCATABLE   ::  AO_PW_overlap(:,:)
   COMPLEX*16               ::  gdotrnu
-  COMPLEX*16,ALLOCATABLE   ::  proj_matrix(:,:,:)
+  !COMPLEX*16,ALLOCATABLE   ::  proj_matrix(:,:,:)
+  COMPLEX*16,ALLOCATABLE   ::  proj_matrix(:,:,:,:)
+
 
   COMPLEX*16,ALLOCATABLE   ::  proj_overlap(:,:,:,:)
 
@@ -39,24 +42,24 @@ PROGRAM projection_main
 
   !Start by getting the names of the files to use as input (basis and wavefunction) and output (NBO)
   !If no filenames are supplied the generics will be used instead
-  IF( IARGC() .LT. 1 )THEN
+  IF( IARGC() .LT. 1 )THEN 
     basis_fn = 'basis.inp'
   ELSE
     CALL GETARG(1, basis_fn)
   ENDIF
-  IF( IARGC() .LT. 2 )THEN
+  IF( IARGC() .LT. 2 )THEN 
     VASP_fn = 'wavefunction.dat'
   ELSE
     CALL GETARG(2, VASP_fn)
   ENDIF
-  IF( IARGC() .LT. 3 )THEN
-    NBO_fn = 'NBO.out'
+  IF( IARGC() .LT. 3 )THEN 
+    NBO_fn = 'NBO.out'     
   ELSE
-    CALL GETARG(3, NBO_fn)
+    CALL GETARG(3, NBO_fn) 
   ENDIF
 
   mat_fn = 'NBO_mat.out'
-
+  
   WRITE(6,'(2A)')' Input file for AO basis  ',basis_fn
   WRITE(6,'(2A)')' Input file for PW calc   ',VASP_fn
   WRITE(6,'(2A)')' Output file for NBO      ',NBO_fn
@@ -68,8 +71,11 @@ PROGRAM projection_main
 
   !Read in input file for atomic orbital basis set
   CALL read_basis(basis_fn,AO_basis)
-  !Then output information on all basis functions in a readable format for a visualization program.
-  CALL basis_set_info_out(AO_basis)
+  !This subroutine has been made obsolete by a change to the data output to NBO.out
+  !Basically all the unique data contained in here is now passed to the nbo program,
+  !That program then generates a single file which can be read in by an auxillary fortran code to produce cube files.
+  !!!Then output information on all basis functions in a readable format for a visualization program.
+  !!!CALL basis_set_info_out(AO_basis)
 
   WRITE(6,*)'****************************************'
   WRITE(6,*)'*** Beginning Projection Calculation ***'
@@ -79,46 +85,89 @@ PROGRAM projection_main
   !Calcualtes the overlap matrix inverse at each k-point, which is required for the projector operator.
   CALL bloch_space_overlap(AO_basis,index_l)
 
-  !Now ready to perform actual projection.
-  CALL CPU_TIME(t1)
+!  !Now ready to perform actual projection.
+!  CALL CPU_TIME(t1)
 
   !If the PW calculation used PAW pseudopotentials, their contribution to the projection (Bloch-space overlap with AO basis) must be calculated
   !PAW_pseudo = .FALSE.
   IF( PAW_pseudo ) CALL PAW_proj_setup(AO_basis,index_l,PAW_overlap)
 
-  ALLOCATE(bloch_band_coeff(s_dim,nbands,nkpts,nspins),proj_matrix(s_dim,nbands,nkpts),AO_PW_overlap(s_dim,nplmax,nkpts))
+  !ALLOCATE(bloch_band_coeff(s_dim,nbands,nkpts,nspins),proj_matrix(s_dim,nbands,nkpts),AO_PW_overlap(s_dim,nplmax,nkpts))
+  ALLOCATE(bloch_band_coeff(s_dim,nbands,nkpts,nspins),proj_matrix(s_dim,nbands,nkpts,nspins),AO_PW_overlap(nplmax,nkpts))
+  AO_PW_overlap=0.d0
 
   !Now the k-point dependent projections will be done.
   !For each kpt the projection is done independently
   !WRITE(6,*)'Beginning of projections for each k-point'
+
+  !Now ready to perform actual projection.
+  !CALL CPU_TIME(t1)
+
 
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(ik,nu,ig,ispin,gdotrnu)
 !!!!!SHARED(nkpts,s_dim,npl,nspins,AO_basis,gk,AO_PW_overlap,PAW_overlap,pw_coeff,PAW_coeff,proj_matrix,bloch_s_inv,bloch_band_coeff,PAW_pseudo)
 !$OMP DO SCHEDULE(STATIC)
   DO ik=1,nkpts
 
-     !WRITE(6,*)'kpt',ik
+     !WRITE(6,*)'kpt',ik,npl(ik)
 
-     !First the overlap of each nu basis function with each planewave must be calculated
+     !!!!!!!!!!!!
+     !!!!NOTE!!!!
+     !!!!!!!!!!!!
+     !I previously calculated the AO_PW overlap for all basis function in the top loop, 
+     !this was then passed to the bottom loop, where matrix multiplication was to treat all AOs at the same time.  
+     !This was faster, but had huge memore requirements.  
+     !That array also had a k-point dimension, for parallelization, which only made things worse
+     !Switching to one AO function at a time treated via matrix-vector multiplication is a bit slower but requires an order of magnitude lower memory requirements.
+     !
+     !I think a happy middle ground could be reached by treating blocks of AO's using matrix mulitplication
+     !The blocks could be the number of bands, so that only the amount of memory used for the plane wave coefficients would be needed.
+     !Then a few large matrix multiplications would be needed, instead of the many vector-matrix multiplications I am currently doing.
+     !For another day
+     !
+
      DO nu=1,s_dim
-        DO ig=1,npl(ik)
-           CALL nu_g_overlap(AO_basis(nu),gk(:,ig,ik),AO_PW_overlap(nu,ig,ik))      !Overlap of AO with PW
+        !First the overlap of each nu basis function with each planewave must be calculated
+        !WRITE(6,*)nu
+        DO ig=1,npl(ik) 
+           !WRITE(6,*)ig
+           !CALL nu_g_overlap(AO_basis(nu),gk(:,ig,ik),AO_PW_overlap(nu,ig,ik))      !Overlap of AO with PW 
+           !gdotrnu = EXP(sqrt_neg_one*DOT_PRODUCT(gk(:,ig,ik),AO_basis(nu)%pos)) !Phase factor accounting for AO's position off the origin
+           !AO_PW_overlap(nu,ig,ik) = AO_PW_overlap(nu,ig,ik) * gdotrnu
+           !!WRITE(6,*)AO_PW_overlap(nu,ig,ik)
+
+           CALL nu_g_overlap(AO_basis(nu),gk(:,ig,ik),AO_PW_overlap(ig,ik))      !Overlap of AO with PW
            gdotrnu = EXP(sqrt_neg_one*DOT_PRODUCT(gk(:,ig,ik),AO_basis(nu)%pos)) !Phase factor accounting for AO's position off the origin
-           AO_PW_overlap(nu,ig,ik) = AO_PW_overlap(nu,ig,ik) * gdotrnu
+           AO_PW_overlap(ig,ik) = AO_PW_overlap(ig,ik) * gdotrnu
+           !WRITE(6,*)AO_PW_overlap(ig,ik)
         ENDDO !End loop over plane wave basis
+
+        !Then for each basis function, nu, the contribution of the planewaves is calculated for all bands at one using vector-matrix multiplication
+        DO ispin=1,nspins
+           !each computation is SUM(nu) S-1{mu,nu} * (SUM(g) <nu|g>*c(a,g))
+           CALL ZGEMV_F95(pw_coeff(:,:,ik,ispin),AO_PW_overlap(:,ik),proj_matrix(nu,:,ik,ispin),(1.d0,0.d0),(0.d0,0.d0),'T')
+        ENDDO
      ENDDO
 
      DO ispin=1,nspins
-        !Calculation of planewave contributions to band coeff's are done at once using matrix multiplication
-        !each computation is SUM(nu) S-1{mu,nu} * (SUM(g) <nu|g>*c(a,g))
-        CALL ZGEMM_F95(AO_PW_overlap(:,:,ik),pw_coeff(:,:,ik,ispin),proj_matrix(:,:,ik),'N','N',(1.d0,0.d0),(0.d0,0.d0))
+!        !Calculation of planewave contributions to band coeff's are done at once using matrix multiplication
+!        !each computation is SUM(nu) S-1{mu,nu} * (SUM(g) <nu|g>*c(a,g))
+!        CALL ZGEMM_F95(AO_PW_overlap(:,:,ik),pw_coeff(:,:,ik,ispin),proj_matrix(:,:,ik),'N','N',(1.d0,0.d0),(0.d0,0.d0))
+!
+!        !Since band is simply summation of PW AND PAW, PAW contirbution is simply added to PW's
+!        IF( PAW_pseudo )  CALL ZGEMM_F95(PAW_overlap(:,:,ik),PAW_coeff(:,:,ik,ispin),proj_matrix(:,:,ik),'N','N',(1.d0,0.d0),(1.d0,0.d0))
+!
+!        !Band overlaps are finally multiplied by inverse of overlap matrix to complete projection
+!        !The use of the inverse of the overlap matrix is necessary due to the non-orthogonality of the AO-basis
+!        CALL ZGEMM_F95(bloch_s_inv(:,:,ik),proj_matrix(:,:,ik),bloch_band_coeff(:,:,ik,ispin),'N','N',(1.d0,0.d0),(0.d0,0.d0))
 
         !Since band is simply summation of PW AND PAW, PAW contirbution is simply added to PW's
-        IF( PAW_pseudo )  CALL ZGEMM_F95(PAW_overlap(:,:,ik),PAW_coeff(:,:,ik,ispin),proj_matrix(:,:,ik),'N','N',(1.d0,0.d0),(1.d0,0.d0))
+        IF( PAW_pseudo )  CALL ZGEMM_F95(PAW_overlap(:,:,ik),PAW_coeff(:,:,ik,ispin),proj_matrix(:,:,ik,ispin),'N','N',(1.d0,0.d0),(1.d0,0.d0))
 
         !Band overlaps are finally multiplied by inverse of overlap matrix to complete projection
         !The use of the inverse of the overlap matrix is necessary due to the non-orthogonality of the AO-basis
-        CALL ZGEMM_F95(bloch_s_inv(:,:,ik),proj_matrix(:,:,ik),bloch_band_coeff(:,:,ik,ispin),'N','N',(1.d0,0.d0),(0.d0,0.d0))
+        CALL ZGEMM_F95(bloch_s_inv(:,:,ik),proj_matrix(:,:,ik,ispin),bloch_band_coeff(:,:,ik,ispin),'N','N',(1.d0,0.d0),(0.d0,0.d0))
+
      ENDDO
 
   ENDDO
@@ -127,10 +176,15 @@ PROGRAM projection_main
 
 
   DEALLOCATE(proj_matrix,AO_PW_overlap)
+  DEALLOCATE(pw_coeff)
+  DEALLOCATE(bloch_s_inv)
+  !PAUSE
 
-  CALL CPU_TIME(t2)
+
+  !CALL CPU_TIME(t2)
   !WRITE(6,*)'Completed projection',SNGL(t2-t1)
   !WRITE(6,*)
+
 
   !Calculate ovelrap matrices for projected bands and use these to quantify completeness of projection.
   CALL calc_spillover(proj_overlap,bloch_band_coeff)
@@ -159,7 +213,7 @@ PROGRAM projection_main
         !FOCK MATRIX
         !Matrix multiplication is used to convert the Fock matrix into the projected basis
         ! F{mu,nu} = SUM(fock_coeff{nu,iband}*F{iband,iband}*CONJG(fock_coeff{nu,iband}))
-        !First the nonorthogonality of the bloch orbtials must be addressed since the MO->AO transform is not unitary
+        !First the nonorthogonality of the bloch orbtials must be addressed since the MO->AO transform is not unitary 
         !coeff's must be multiplied by Overlap matrix
         CALL ZGEMM_F95(bloch_s_mat(:,:,ik),bloch_band_coeff(:,:,ik,ispin),coeff_dummy,'N','N',(1.d0,0.d0),(0.d0,0.d0))
         !Then the trnsformation is simply a unitary transform using the new coefficients
@@ -199,7 +253,6 @@ PROGRAM projection_main
   WRITE(6,*)'Bloch-space valence electrons ',num_elec*DBLE(3-nspins)
   WRITE(6,*)
 
-
   CALL CPU_TIME(t1)
   !WRITE(6,*)'Time for density and Fock matrices',SNGL(t1-t2)
   !WRITE(6,*)
@@ -223,11 +276,11 @@ SUBROUTINE calc_spillover(r_mat,band_coeff)
   USE projection_shared
   IMPLICIT NONE
 
-  COMPLEX*16,ALLOCATABLE,INTENT(OUT)  ::  r_mat(:,:,:,:)  !This will contain the band overlap matrices on exit from the program.
+  COMPLEX*16,ALLOCATABLE,INTENT(OUT)  ::  r_mat(:,:,:,:)  !This will contain the band overlap matrices on exit from the program.  
   COMPLEX*16,DIMENSION(:,:,:,:),INTENT(IN) :: band_coeff  !This contains the coefficient of each band in the AO-basis at each k-point
 
   COMPLEX*16,DIMENSION(s_dim,nbands)   ::  r_mat_dummy  !Used for BLAS subroutines
-  REAL*8,DIMENSION(nspins)      ::  spillover
+  REAL*8,DIMENSION(nspins)      ::  spillover 
   REAL*8,DIMENSION(nspins)      ::  spread
   COMPLEX*16  ::    chi_overlap
   REAL*8      ::    ind_spill
@@ -248,7 +301,7 @@ SUBROUTINE calc_spillover(r_mat,band_coeff)
 
   INTEGER   ::  ik,j,iband,ispin
 
-  !All spillover analysis is writen out to this
+  !All spillover analysis is writen out to this 
   OPEN(7,file='band_spillover.out')
   spillover = 0.d0
   spread = 0.d0
@@ -276,7 +329,7 @@ SUBROUTINE calc_spillover(r_mat,band_coeff)
   DO ik=1,nkpts
 
      band_spillover = 0.d0
-     band_weight_spillover = 0.d0
+     band_weight_spillover = 0.d0 
      band_weight_spread = 0.d0
      !weight_spillover = 0.d0
      weight_count = 0
@@ -358,7 +411,7 @@ SUBROUTINE calc_spillover(r_mat,band_coeff)
      WRITE(7,*)SNGL(band_spillover(ispin) / DBLE(nbands))
      WRITE(7,*)
      WRITE(7,*)'For spin',ispin,'kpt',ik,'occupied bands',weight_count(ispin),'spillover'
-     WRITE(7,*)SNGL(weight_spillover(ispin) / DBLE(weight_count(ispin)))
+     WRITE(7,*)SNGL(band_weight_spillover(ispin) / DBLE(weight_count(ispin)))
      WRITE(7,*)
      WRITE(7,*)
 

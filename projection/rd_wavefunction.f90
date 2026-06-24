@@ -58,6 +58,8 @@ MODULE rd_wavefunction
   REAL*8, ALLOCATABLE  ::  pseudo_norm(:)    !Norm of each of band only taking into account the planewave portion
   REAL*8, ALLOCATABLE  ::  aug_norm(:)
 
+  INTEGER  ::  kdim(3)  !Dimensionality of k-point mesh. Global so it can be used when writing the NBO.out file.
+
   REAL*8,PARAMETER ::  eV = 27.211652d0
 
 
@@ -74,6 +76,8 @@ MODULE rd_wavefunction
       REAL*8  ::  energy_sum, occ_sum
       INTEGER ::  iion, ityp, ikpt, iband, ipl, nplread, ipro, ispin, j, k, l 
       !INTEGER :: l,ll,m
+
+      REAL*8  ::  kgrid(3) !For determing info on the k-point mesh
 
       REAL*8, PARAMETER  ::   bohr = 0.529177249d0, pi=4.d0*ATAN(1.d0), hartree=27.21138386
 
@@ -163,6 +167,34 @@ MODULE rd_wavefunction
          !WRITE(6,*)'k-point weight',SNGL(kpt_wt(ikpt))
          !WRITE(6,*)
       ENDDO
+
+      !Now analyze the k-point mesh as obtained out of VASP
+      !We want to see if there are any dimensions with only a single k-point
+      !This will be used for adjusting the unit cells written out to the NBO.out file
+      kgrid = 1
+      DO ikpt=1,nkpts
+         DO j=1,3
+            IF( ABS(kpt(j,ikpt)).GT.1.d-13 )THEN
+               !WRITE(6,*)j,(1.d0/ABS(kpt(j,ik)))
+               IF( (1.d0/ABS(kpt(j,ikpt))).GT.kgrid(j) )THEN
+                  kgrid(j) = (1.d0/ABS(kpt(j,ikpt)))
+               ENDIF
+            ENDIF
+         ENDDO
+      ENDDO
+      DO j=1,3
+         !WRITE(6,*)kgrid(j)-NINT(kgrid(j))
+         IF( ABS(kgrid(j)-NINT(kgrid(j))).GT.1.d-10 )THEN
+            WRITE(6,*)'kgrid does not contain a near integer in the direction',j
+            WRITE(6,*)kgrid(j)
+            STOP
+          ENDIF
+         kdim(j) = NINT(kgrid(j))
+      ENDDO
+
+      WRITE(6,*)'Dimemsionality of k-point mesh'
+      WRITE(6,'(3I8)')kdim
+      WRITE(6,*)
 
       !Spin dependent information is now read in
       !This includes band energies and occupancies for each band at each k-point 
@@ -333,7 +365,6 @@ MODULE rd_wavefunction
       !Convert the coefficient arrays to ones with doulbe precision for use in BLAS subroutines
       PAW_coeff = cproj * bohr**(1.5) !Also need to convert this to inverse bohr from inverse angstroms
       pw_coeff  = cw
-
 
 
 

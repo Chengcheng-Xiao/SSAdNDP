@@ -10,7 +10,7 @@ CONTAINS
 
 
 !This subroutine calculates the inverse overlap matrices at each k-point used in the planewave calculation
-!The first step is to calculate the real space overlap over a sufficient number of unit cells
+!The first step is to calculate the real space overlap over a sufficient number of unit cells 
 !Linear combinations of these real space overlaps (Bloch transforms) then yield the k-space overlap
 !LAPACK subroutines are then used to calculate the inverse overlap matrices, which are required for the projection
 
@@ -24,9 +24,9 @@ SUBROUTINE bloch_space_overlap(AO_basis,index_l)
 
   TYPE(AO_function), DIMENSION(:) :: AO_basis
 
-  !This array holds the indices of the unit cells to be used in calculating real space overlap.
+  !This array holds the indices of the unit cells to be used in calculating real space overlap. 
   !The indices are counts of unit cells moved away from the central.
-  INTEGER, ALLOCATABLE  ::  index_l(:,:)
+  INTEGER, ALLOCATABLE  ::  index_l(:,:)  
   INTEGER               ::  num_l,l_half  !Total number of unit cells, and the index of the central unit cell
   REAL*8, DIMENSION(3)  ::  lvec   !Actual distance vector from origin of central unit cell to origin of unit cell of interest
 
@@ -74,14 +74,14 @@ SUBROUTINE bloch_space_overlap(AO_basis,index_l)
   !WRITE(6,*)'Calcualting Real Space Overlap Matrices'
   CALL CPU_TIME(t1)
   IF( gamma_point )THEN
-
+  
      !WRITE(6,*)'gamma point overlap calculation'
-
-     !For a gamma point calculation, it is impossible to recover real space information in the back transform
+     
+     !For a gamma point calculation, it is impossible to recover real space information in the back transform 
      !Therfore it is unnecessary to calculate all the overlap matrices separately since they will all be lost once you go to k-space
-     !Therefore, all real space overlap will instead be stored additively in s_mat_tilde
+     !Therefore, all real space overlap will instead be stored additively in s_mat_tilde 
      s_mat_tilde = 0.d0
-     DO il=1,num_l
+     DO il=1,num_l 
         lvec = 0.d0
         DO j=1,3
            lvec = lvec + a(:,j)*index_l(j,il)
@@ -91,16 +91,16 @@ SUBROUTINE bloch_space_overlap(AO_basis,index_l)
      !DO j=1,s_dim
      !   WRITE(6,'(17f8.4)')s_mat_tilde(j,:)
      !ENDDO
-
+     
   ELSE
-
+  
      !Only half of the matrices acutally need to be computed since symmetry can be used
      !S{mu,nu},{0,l} = TRANSPOSE( S{mu,nu},{0,-l} )
      !Based on how index_l was constructed, -l is the mirror of l across l_half
      !Thus, the negative of the first l-vector is the last l-vecotr and so one.
      per_s_mat = 0.d0
      DO il=1,l_half
-        !lvec contains the vector from the origin of unit cell (0,0,0) to the unit cell indexed by il
+        !lvec contains the vector from the origin of unit cell (0,0,0) to the unit cell indexed by il 
         lvec = 0.d0
         DO j=1,3
            lvec = lvec + a(:,j)*index_l(j,il)
@@ -127,7 +127,7 @@ SUBROUTINE bloch_space_overlap(AO_basis,index_l)
 
   !Arrays used in k-space overlap matrices
   ALLOCATE(bloch_s_mat(s_dim,s_dim,nkpts),bloch_s_inv(s_dim,s_dim,nkpts))
-
+  
   !Convert from S_{mu nu}^{0 l} to S_{mu nu}^(k) via Fourier transform
   bloch_s_mat=0.d0
   IF( gamma_point )THEN
@@ -136,6 +136,8 @@ SUBROUTINE bloch_space_overlap(AO_basis,index_l)
   ELSE
      !Otherwise, the complete set of Bloch-space overlap matrices is generated in 'bloch_s_mat'
      CALL real_to_bloch(per_s_mat,bloch_s_mat,index_l,kpt)
+     !This is a big array so get rid of it
+     DEALLOCATE(per_s_mat)
   ENDIF
   CALL CPU_TIME(t1)
 
@@ -190,7 +192,7 @@ SUBROUTINE bloch_space_overlap(AO_basis,index_l)
          CALL ZGESVD_F95(bloch_s_inv(:,:,ik),sing_value,u_matrix,v_matrix,work_array,'A')
          !Previously used SVD routine, has numerical instability wrt really small values
          !CALL ZGESDD_F95(bloch_s_inv(:,:,ik),sing_value,u_matrix,v_matrix,'A')
-
+  
          !This loop is the equivalent of multiplying the inverse of the singular values matrix by adjoint of the u matrix
          DO j=1,s_dim
             IF( sing_value(j) >= 1.d-3 )THEN
@@ -229,6 +231,7 @@ SUBROUTINE bloch_space_overlap(AO_basis,index_l)
 !$OMP END DO NOWAIT
 !$OMP END PARALLEL
 
+
   CALL CPU_TIME(t2)
 
   !WRITE(6,*)'Finished calculating overlap inverse matrices',SNGL(t2-t1)
@@ -250,7 +253,7 @@ SUBROUTINE check_linear_depend(input_mat,eig_min)
 
   COMPLEX*16,DIMENSION(:,:),INTENT(IN)  ::  input_mat
   REAL*8,INTENT(OUT)                     ::  eig_min
-
+  
   COMPLEX*16,DIMENSION(SIZE(input_mat,1),SIZE(input_mat,2)) :: test_mat
 
   REAL*8,DIMENSION(SIZE(input_mat,1))  ::  eigval
@@ -286,7 +289,7 @@ SUBROUTINE real_overlap(lvec,AO_basis,s_mat)
   IMPLICIT NONE
 
   REAL*8,DIMENSION(3),INTENT(IN)    ::  lvec
-  TYPE(AO_function),DIMENSION(:)    ::  AO_basis
+  TYPE(AO_function),DIMENSION(:)    ::  AO_basis 
   REAL*8,DIMENSION(:,:),INTENT(OUT) ::  s_mat
 
   INTEGER   ::  nu,mu,igauss,jgauss
@@ -335,7 +338,7 @@ SUBROUTINE real_overlap(lvec,AO_basis,s_mat)
               !This is the complete overlap expression for two S-type gaussians.  But higher order harmonics complicate the calculation
               integral = AO_basis(nu)%norm(igauss) * AO_basis(mu)%norm(jgauss) * (pi/(a1+a2))**(1.5) * EXP( -screen )
 
-              !These vectors are the distance from each respective atomic center to the location of the Gaussian that results from the intersection
+              !These vectors are the distance from each respective atomic center to the location of the Gaussian that results from the intersection 
               ! of the two particular Gaussians described by a1 and a2
               PA = (- a2 / (a1 + a2)) * dist_vec
               PB = ( a1/ (a1 + a2)) * dist_vec
@@ -376,7 +379,7 @@ SUBROUTINE cartesian_component(AO_nu,AO_mu,PA,PB,a1,a2,cartesian)
 
   TYPE(AO_function),INTENT(IN)       ::   AO_nu,AO_mu
   !INTEGER,DIMENSION(3,3),INTENT(IN)  ::   nu_lmn_mat,mu_lmn_mat
-  !REAL*8, DIMENSION(3),INTENT(IN)    ::   nu_cart_coeff,mu_cart_coeff
+  !REAL*8, DIMENSION(3),INTENT(IN)    ::   nu_cart_coeff,mu_cart_coeff 
   REAL*8,DIMENSION(3),INTENT(IN)     ::   PA,PB
   REAL*8,INTENT(IN)                  ::   a1,a2
   REAL*8,INTENT(OUT)                 ::   cartesian
@@ -394,7 +397,7 @@ SUBROUTINE cartesian_component(AO_nu,AO_mu,PA,PB,a1,a2,cartesian)
   cartesian = 0
   DO nucart=1,AO_nu%ncart
      DO mucart=1,AO_mu%ncart
-
+  
         sigma_vec = 0
         DO k=1,3
            roof = (AO_nu%cart_mat(nucart,k) + AO_mu%cart_mat(mucart,k)) / 2
@@ -405,8 +408,8 @@ SUBROUTINE cartesian_component(AO_nu,AO_mu,PA,PB,a1,a2,cartesian)
         ENDDO
 
         cartesian = cartesian + PRODUCT(sigma_vec)*AO_nu%cart_coeff(nucart)*AO_mu%cart_coeff(mucart)
-
-     ENDDO
+  
+     ENDDO 
   ENDDO
   !WRITE(6,*)
 
@@ -427,7 +430,7 @@ SUBROUTINE f_funct(j, l, m, a, b, f_output)
   REAL*8,INTENT(OUT)           ::  f_output  !output from function
 
   INTEGER                      ::  fmax, fmin   !determines the upper and lower limit for the summation
-  REAL*8                       ::  coeff1, coeff2   !resulting binomial
+  REAL*8                       ::  coeff1, coeff2   !resulting binomial 
   INTEGER                      ::  i
 
   f_output = 0.d0
@@ -466,9 +469,9 @@ SUBROUTINE lvec_init(index_l,num_l,AO_basis)
 
   INTEGER :: il,i,j,k
 
-
-  !Test if the system is a surface, based on the k-point mesh
-  CALL surface_test(surface,surface_norm)
+!I don't need this anymore, since I generalized to calculating all dimensions in rd_wavefunction module as stored in kdim
+!  !Test if the system is a surface, based on the k-point mesh
+!  CALL surface_test(surface,surface_norm)
 
   !How far it takes for the most diffuse basis function to die off to an acceptable level and how many unit cells this corresponds to in each direction
   CALL cutoff(n_lvec,AO_basis)
@@ -501,10 +504,10 @@ SUBROUTINE lvec_init(index_l,num_l,AO_basis)
 
 
   !!!!NOTE!!!!!!!
-  !I used to use a screening procedure to shave off the 'cube' of unit cells generated by the above loop.
+  !I used to use a screening procedure to shave off the 'cube' of unit cells generated by the above loop. 
   !However, I could not come up with a rigorous and easy way to do that, without generating pretty large errors.
   !So I took it out, I could just keep the 'screening' loop with allowing all of them but for cleanliness I dropped that
-  !However, the basic machinery to screen is still here.
+  !However, the basic machinery to screen is still here. 
   !!!!!!!!!!!!
 
   !The above procedure generates a cube of possible unit cells to use in the overlap calculation, centered at the central unit cell.
@@ -580,7 +583,7 @@ SUBROUTINE surface_test(surface_bool,surface_norm)
   DO i=1,3
      kmax(i)=MAXVAL(ABS(kpt(i,:)))
   ENDDO
-  IF( MAXVAL(kmax) /= MINVAL(kmax) .AND. MINVAL(kmax) == 0.d0 )THEN
+  IF( MAXVAL(kmax) /= MINVAL(kmax) .AND. MINVAL(kmax).LT.1.d13 )THEN  !second test used to be equal to zero, but values were actually just machine zeros so it was failing
      surface_bool = .TRUE.
      WRITE(6,*)'Based on there being a denser k-point grid in some directions than others,'
      WRITE(6,*)'It is assumed that this is a surface calculations'
@@ -590,7 +593,7 @@ SUBROUTINE surface_test(surface_bool,surface_norm)
      WRITE(6,*)
   ELSE
      !WRITE(6,*)'This does not appear to be a surface calc and will not be treated as such'
-  ENDIF
+  ENDIF    
 
 
 END SUBROUTINE surface_test
@@ -607,7 +610,7 @@ SUBROUTINE cutoff(n_lvec,AO_basis)
 
   INTEGER,DIMENSION(2)  :: nu_min     !index of basis function with minimum exponent, second index is that of the minimum exponent
   REAL*8                :: alpha_min  !placeholder used for finding minimum exponent
-  REAL*8  ::  l_cutoff           !Actual distance
+  REAL*8  ::  l_cutoff           !Actual distance 
   INTEGER ::  nu,igauss,k        !Counters
   REAL*8  ::  thold              !Threshold for value of basis function to determine "far enough" away 1E-10 is used here
   REAL*8  ::  test_value         !Used in testing l_cutoff, compared to thold
@@ -622,7 +625,7 @@ SUBROUTINE cutoff(n_lvec,AO_basis)
             alpha_min = AO_basis(nu)%alpha(igauss)
             nu_min = (/nu,igauss/)
         ENDIF
-     ENDDO
+     ENDDO     
   ENDDO
 
   !In the case of SP formatting, both have the same exponent values, but the s-type will be found above since it is listed first.
@@ -644,14 +647,14 @@ SUBROUTINE cutoff(n_lvec,AO_basis)
   !Once a distance is found where the value of the GTO is small enough, the loop is exited.
   thold = 1.d-10
   l_cutoff = 0.d0
-  DO
+  DO 
      l_cutoff = l_cutoff + 1.d0
      test_value = l_cutoff**AO_basis(nu_min(1))%l * AO_basis(nu_min(1))%coeff(nu_min(2)) * AO_basis(nu_min(1))%norm(nu_min(2)) &
                    & * EXP(-AO_basis(nu_min(1))%alpha(nu_min(2))*l_cutoff**2)
      IF( ABS(test_value) < thold )THEN
         EXIT
      ENDIF
-  ENDDO
+  ENDDO 
 
   !WRITE(6,*)'Real space distance cutoff, bohr',l_cutoff
 

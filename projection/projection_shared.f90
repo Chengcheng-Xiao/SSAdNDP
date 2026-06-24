@@ -79,7 +79,7 @@ SUBROUTINE nu_g_overlap(AO,gk,pw_overlap)
      screen = gsqr / AO%alpha(igauss)
      IF( screen .GT. nu_g_screen )EXIT !Since the values of alpha only shrink, if one alpha is too small all following it will be as well
      pw_overlap = pw_overlap + AO%coeff(igauss) * proj_2pi / (AO%alpha(igauss))**(0.75) * (sqrt_neg_one/SQRT(AO%alpha(igauss)))**AO%l * EXP(-screen)
-
+     
   ENDDO
 
   !Gaussian and cartesian are combined
@@ -94,8 +94,8 @@ ENDSUBROUTINE nu_g_overlap
 !The bands are in the same original AO basis
 !The orhtogonalizing matrix is constructed as W(WSW)^-1/2, where S is the 'overlap_mat' and W is a diagonal matrix containing the occupancy of each band
 SUBROUTINE do_OWSO(overlap_mat,band_occ,band_coeff)
-  USE blas95
-  USE lapack95
+  USE BLAS95
+  USE LAPACK95
   IMPLICIT NONE
 
   COMPLEX*16,DIMENSION(:,:),INTENT(IN)    ::  overlap_mat  !Input overlap matrix, used to construct orthogonalizing matrix
@@ -103,7 +103,7 @@ SUBROUTINE do_OWSO(overlap_mat,band_occ,band_coeff)
   COMPLEX*16,DIMENSION(:,:),INTENT(INOUT) ::  band_coeff   !On output represent the orhtogonalized bands in the AO basis
 
   COMPLEX*16,DIMENSION(SIZE(overlap_mat,1),SIZE(overlap_mat,1)) ::  sym_weight !Used in OWSO equals (WSW), where W is weight_mat. Also used as dummy for BLAS
-  REAL*8,DIMENSION(SIZE(overlap_mat,1))   ::  weight_mat   !Diagonal matrix of occupancies to weight orthogonalization.
+  REAL*8,DIMENSION(SIZE(overlap_mat,1))   ::  weight_mat   !Diagonal matrix of occupancies to weight orthogonalization.  
 
   COMPLEX*16,DIMENSION(SIZE(overlap_mat,1),SIZE(overlap_mat,1)) ::  eigvec  !Eigenvectors used in matrix square root
   REAL*8,DIMENSION(SIZE(overlap_mat,1))   ::  eigval                        !Eigenvalues used in matrix square root
@@ -121,8 +121,8 @@ SUBROUTINE do_OWSO(overlap_mat,band_occ,band_coeff)
   IF( nbands .NE. SIZE(band_coeff,2) )STOP 'Input overlap matrix and band coefficients are not the same dimension in do_OWSO subroutine'
 
   !Construct weight matrix.
-  !Below some cutoff occupancy, 0.005 is used as the occupancy.
-  !If real occupancies are used, the WSW matrix will become linear dependent.
+  !Below some cutoff occupancy, 0.005 is used as the occupancy.  
+  !If real occupancies are used, the WSW matrix will become linear dependent.  
   !This floor used is still far below full (2) so occupied and unoccupied will be differentiated
   DO iband=1,nbands
      IF( ABS(band_occ(iband)) > 5.d-3 )THEN
@@ -188,12 +188,14 @@ SUBROUTINE write_NBO_output(NBO_fn,mat_fn,AO_basis,index_l)
   IMPLICIT NONE
 
   CHARACTER(128),INTENT(IN)                  ::  NBO_fn
-  CHARACTER(128),INTENT(IN)                  ::  mat_fn
+  CHARACTER(64),INTENT(IN)                   ::  mat_fn
   TYPE(AO_function),DIMENSION(:),INTENT(IN)  ::  AO_basis
   INTEGER,DIMENSION(:,:),INTENT(IN)          ::  index_l
 
   INTEGER  ::  l_half
-  INTEGER  ::  j,ik,ispin
+  INTEGER  ::  i,j,ik,ispin,nu
+
+  INTEGER  ::  nneigh  !Number of neighbor unit cells to print
 
   OPEN (55,file=NBO_fn)
   !Begin by writing out some general info about the system
@@ -202,19 +204,16 @@ SUBROUTINE write_NBO_output(NBO_fn,mat_fn,AO_basis,index_l)
   WRITE(55,'(I8,A8)')s_dim,'#nbasis'
   WRITE(55,'(I8,A8)')nspins,'#nspins'
 
-  !Not all l-vectors are used, only those corresponding to neighboring unit  cells
-  IF( gamma_point )THEN
-     WRITE(55,'(I8,A4)')1,'#ng'
-  ELSEIF( surface )THEN
-     WRITE(55,'(I8,A4)')25, '#ng'   !!!TRG: we changed this in order to account
-                                  !!! for the second layer of neighbouring cells
-  ELSE
-     WRITE(55,'(I8,A4)')125,'#ng'  !!!TRG: same here
-  ENDIF
+  !Not all l-vectors are used, only those corresponding to neighboring unit  cells 
+  nneigh = 1
+  DO j=1,3 !Don't want any neighbors if there is only one k-point along that direction though.
+     IF( kdim(j).GT.1 )nneigh=nneigh*3
+  ENDDO
+  WRITE(55,'(I8,A4)')nneigh,'#ng'
   WRITE(55,'(I8,A4)')nkpts,'#nk'
 
   WRITE(55,*)
-
+  
   !Now write out some info about basis function ordering and info about each basis function (ie. set of exponents and angular momentum)
   !The index of the first basis function on each atom.
   !There is an additional number written out for the next index AFTER the end of the basis set.
@@ -263,17 +262,36 @@ SUBROUTINE write_NBO_output(NBO_fn,mat_fn,AO_basis,index_l)
 
   WRITE(55,*)
 
+  ! !Lattice parameters
+  ! DO j=1,3
+  !    WRITE(55,'(3F18.10)',ADVANCE='NO')a(:,j)
+  !    IF( j == 1 )WRITE(55,'(A)',ADVANCE='NO')' #lattice vectors'
+  !    WRITE(55,*)
+  ! ENDDO
+  ! WRITE(55,*)
+  !
+  ! !Atom positions
+  ! DO j=1,n_atom
+  !    WRITE(55,'(3F18.10)',ADVANCE='NO')atoms(:,j)
+  !    IF( j == 1 )WRITE(55,'(A)',ADVANCE='NO')' #atom positions'
+  !    WRITE(55,*)
+  ! ENDDO
+  ! WRITE(55,*)
+
   !Write out the l-vectors
   !The ordering of l_vectors expected by the NBO code is different than that used here, so they will be written out non-linearly
   !The first must be (/0,0,0/)
   !Then they can proceed in any order but must be printed in pairs of negatives.
   !Only those of neighboring cells will be included as those are all that will be used in the NBO analysis in searching for spanning bonds
   l_half = (SIZE(index_l,2)+1)/2
-  WRITE(55,'(3I3)')index_l(:,l_half)
+  WRITE(55,'(3I3,A)')index_l(:,l_half),' #real space unit cells to search'
   IF( .NOT. gamma_point )THEN
      DO j=1,l_half-1
-        IF( surface .AND. index_l(3,l_half-j) .NE. 0 )GOTO 55
-        IF( MAXVAL(ABS(index_l(:,l_half-j))) < 3 )THEN !!!TRG: we changed this (2 to 3) in order to account for the second layer of neighbouring cells; limits abs indexg values to < 3
+        !IF( surface .AND. index_l(3,l_half-j) .NE. 0 )GOTO 55
+        DO i=1,3 !Generalize old surface test to all dimensions
+           IF( kdim(i).EQ.1 .AND. index_l(i,l_half-j).NE.0 )GOTO 55
+        ENDDO
+        IF( MAXVAL(ABS(index_l(:,l_half-j))) < 2 )THEN
            WRITE(55,'(3I3)')index_l(:,l_half - j)
            WRITE(55,'(3I3)')index_l(:,l_half + j)
         ENDIF
@@ -288,12 +306,33 @@ SUBROUTINE write_NBO_output(NBO_fn,mat_fn,AO_basis,index_l)
   !The density and overlap matrices will be written out in this same order.
   !The weight of each k-point is also included. Unless hihger symmetry is included, this is 1/nkpts for the Gamma point and 2/nkpts for all other.
   DO ik=1,nkpts
-     WRITE(55,'(4F18.10)')kpt(:,ik),kpt_wt(ik)
+     WRITE(55,'(4F18.10)',ADVANCE='NO')kpt(:,ik),kpt_wt(ik)
+     IF( ik == 1 )WRITE(55,'(A)',ADVANCE='NO')' #k-points'
+     WRITE(55,*)
   ENDDO
   WRITE(55,*)
 
-  WRITE(55,*)mat_fn  !'NBO_mat.out'
+  WRITE(55,'(A64)')mat_fn  !'NBO_mat.out'
   WRITE(55,*)
+
+  !Basis set information
+  WRITE(55,*)'Basis set information. Used to produce output file for visualtion.'
+  WRITE(55,*)
+  DO nu=1,s_dim
+     WRITE(55,'(I)')AO_basis(nu)%num_gauss
+     WRITE(55,'(10D17.9)')AO_basis(nu)%alpha
+     WRITE(55,'(10D17.9)')AO_basis(nu)%coeff
+     WRITE(55,'(10D17.9)')AO_basis(nu)%norm
+     WRITE(55,'(3D16.8)')AO_basis(nu)%pos
+     !WRITE(35,'(3I)')AO_basis(nu)%lmn
+     WRITE(55,'(I)')AO_basis(nu)%ncart
+     DO j=1,AO_basis(nu)%ncart
+        WRITE(55,'(D17.9,3I)')AO_basis(nu)%cart_coeff(j),AO_basis(nu)%cart_mat(j,:)
+     ENDDO
+
+     WRITE(55,*)
+  ENDDO
+
 
   CLOSE(55)
 
@@ -304,7 +343,7 @@ SUBROUTINE write_NBO_output(NBO_fn,mat_fn,AO_basis,index_l)
   !The ordering 1)overlap, 2)density, 3)fock is expected by the NBO code
   CALL write_sym_matrices(66,bloch_s_mat)
 
-  DO ispin=1,nspins
+  DO ispin=1,nspins  
      CALL write_sym_matrices(66,bloch_density(:,:,:,ispin))
   ENDDO
 
@@ -496,13 +535,13 @@ INTEGER FUNCTION factor(x)
   factor = 1
   n=x
 
-  DO
+  DO 
      IF( n .LE. 1 )EXIT
-     factor = factor * n
-     n = n - 1
+     factor = factor * n       
+     n = n - 1                 
   ENDDO
 
-
+  
 END FUNCTION factor
 
 
