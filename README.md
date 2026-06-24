@@ -1,12 +1,12 @@
 # Solid State Adaptive Natural Density Partitioning (SSAdNDP)
 
-Solid State Adaptive Natural Density Partitioning (SSAdNDP) [1] is an extension of the [AdNDP method](https://zenodo.org/records/3252298) [2] to periodic systems and as such was derived from [periodic implementation](http://schmidt.chem.wisc.edu/nbosoftware) [3] of the [Natural Bond Orbital (NBO)](http://nbo6.chem.wisc.edu/) analysis [4]. SSAdNDP allows the interpretation of chemical bonding in systems with translational symmetry in terms of classical lone pairs and two-center bonds, as well as multi-center delocalized bonding. Similar to AdNDP, the bonding pattern is expressed as a set of *n*-center - 2-electron (*n*c-2e) bonds. See the [AdNDP page](https://zenodo.org/records/3252298) and [AdNDP](http://pubs.rsc.org/en/Content/ArticleLanding/2008/CP/b804083d#!divAbstract) and [SSAdNDP](http://pubs.rsc.org/en/content/articlelanding/2013/cp/c3cp50350j#!divAbstract) publications [1,2] for details on this approach to interpretation of chemical bonding.
+Solid State Adaptive Natural Density Partitioning (SSAdNDP) [1] is an extension of the [AdNDP method](https://zenodo.org/records/3252298) [2] to periodic systems and, as such, was derived from [periodic implementation](http://schmidt.chem.wisc.edu/nbosoftware) [3] of the [Natural Bond Orbital (NBO)](http://nbo6.chem.wisc.edu/) analysis [4]. SSAdNDP allows the interpretation of chemical bonding in systems with translational symmetry in terms of classical lone pairs and two-center bonds, as well as multi-center delocalized bonding. Similar to AdNDP, the bonding pattern is expressed as a set of *n*-center - 2-electron (*n*c-2e) bonds. See the [AdNDP page](https://zenodo.org/records/3252298) and [AdNDP](http://pubs.rsc.org/en/Content/ArticleLanding/2008/CP/b804083d#!divAbstract) and [SSAdNDP](http://pubs.rsc.org/en/content/articlelanding/2013/cp/c3cp50350j#!divAbstract) publications [1,2] for details on this approach to interpretation of chemical bonding.
 
 ## Getting Started
 
 These instructions will get you a copy of the project up and running.
 
-This package comes in three part:
+This package comes in three parts:
 1. DFT interface and projection executable.
 2. SSAdNDP calculation executable.
 3. Visualization executable.
@@ -29,7 +29,7 @@ The code is written in `Fortran 90`, and requires the `BLAS95` and `LAPACK95` li
   * No modification needed.
 
 ### Installing SSAdNDP software
-1. Go to `SSAdNDP` folder, modify `Makefile` by changing the corresponding `MKLROOT`.
+1. Go to the `SSAdNDP` folder, modify `Makefile` by changing the corresponding `MKLROOT`.
 2. Use the following command to generate a `Makefile`:
 ```
 ./mkmf -t Makefile.template -p ssadndp.exe
@@ -48,6 +48,9 @@ ifort visual.f90 -o visual.exe
 
 
 ## Usage
+
+Please check out [`SSAdNDP_manual.pdf`](https://github.com/Chengcheng-Xiao/SSAdNDP/blob/master/manual/SSAdNDP_manual.pdf).
+
 The workflow of SSAdNDP is:
 1. Calculate the system with DFT code and generate the wavefunctions (wavefunction.dat)
     1. Put `LNBO=.T.` into `INCAR`. Make sure `NPAR` is the default value and `ISYM=0` is set.
@@ -80,20 +83,18 @@ The workflow of SSAdNDP is:
     ```
     2. use vesta to visualize, first open the `lattice_vec.cube` and unselect `show section`, then `Edit` -> `Edit Data` -> `phase` -> `Import` to import `*_bond_*.cube`. Select the first entry of `*_bond_*.cube` and change the three numbers under `this layer` to `0.5 0.5 0.5`.
 
-Please checkout [`SSAdNDP_manual.pdf`](https://github.com/Chengcheng-Xiao/SSAdNDP/blob/master/manual/SSAdNDP_manual.pdf).
+
 
 ## History
 
-This project is originally written by Prof. Alexander Boldyrev's group @ Utah
-State University based on the periodic-NBO code developed by Prof. J. R.
-Schmidt's group @ University of Wisconsin-Madison.
+This project was a collaboration between Prof. Alexander Boldyrev's group @ Utah State University and Prof. JR Schmidt's lab @ University of Wisconsin-Madison
 
 <!-- Forked from [http://ion.chem.usu.edu/~boldyrev/ssadndp.php](http://ion.chem.usu.edu/~boldyrev/ssadndp.php) (no longer maintained). -->
-<!-- *The source code has been updated by replacing several deprecated routine-calling scheme, and a modified Makefile for it to work with newest intel compiler and MKL version 2022.1.1* -->
+<!-- *The source code has been updated by replacing several deprecated routine-calling schemes, and a modified Makefile for it to work with the newest Intel compiler and MKL version 2022.1.1* -->
 
 ## References
 
-The author request that anyone who downloads and utilizes the code cite:
+The authors request that anyone who downloads and utilizes the code cite:
 
 [1] [Solid state adaptive natural density partitioning: a tool for deciphering multi-center bonding in periodic systems](http://pubs.rsc.org/en/content/articlelanding/2013/cp/c3cp50350j#!divAbstract) Timur R. Galeev, Benjamin D. Dunnington, J. R. Schmidt, and Alexander I. Boldyrev *Phys. Chem. Chem. Phys.*, 2013, **15**, 5022-5029
 
