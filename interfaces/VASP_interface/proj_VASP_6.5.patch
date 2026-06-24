@@ -1,0 +1,54 @@
+diff --color -urN src/.objects /Users/chengchengxiao/Downloads/VASP/ssadndp/vasp.6.5.0.backup/src/.objects
+--- src/.objects	2024-12-16 15:35:52
++++ /Users/chengchengxiao/Downloads/VASP/ssadndp/vasp.6.5.0.backup/src/.objects	2026-06-24 14:04:15
+@@ -295,6 +295,7 @@
+ 	linear_response.o \
+ 	auger.o \
+ 	dmatrix.o \
++        projection_output.o \
+ 	phonon.o \
+ 	elphon_derivative.o \
+ 	wannier_mats.o \
+diff --color -urN src/main.F /Users/chengchengxiao/Downloads/VASP/ssadndp/vasp.6.5.0.backup/src/main.F
+--- src/main.F	2024-12-16 15:35:52
++++ /Users/chengchengxiao/Downloads/VASP/ssadndp/vasp.6.5.0.backup/src/main.F	2026-06-24 14:04:15
+@@ -249,6 +249,8 @@
+                                 validate_kernel_dimensionality, &
+                                 validate_surface_normal_direction, &
+                                 write_coulomb_cutoff
++      USE projection_output
++
+       IMPLICIT NONE
+ 
+ !=======================================================================
+@@ -443,6 +445,11 @@
+ #ifdef MinimaxTest
+       TYPE(imag_grid_handle) :: IMAG_GRIDS
+ #endif
++
++!Added by BDD
++!-----Logical to be read in for performing output of pw's for projection
++      LOGICAL    LNBO
++
+ !=======================================================================
+ ! All COMMON blocks
+ !=======================================================================
+@@ -5139,6 +5146,18 @@
+         CALL REDIS_PW_OVER_BANDS(WDES, W)
+       ENDIF
+    ENDIF wrtwave
++
++  !Added by BDD for customized output
++  wrtnbo: IF ( INFO%LSTOP ) THEN
++
++      !First, test if the flag has been given in the INCAR for output
++      LNBO = .FALSE.
++      CALL RDATAB(IO%LOPEN,'INCAR',IO%IU5,'LNBO','=','#',';','L', &
++     &            IDUM,RDUM,CDUM,LNBO,CHARAC,N,1,IERR)
++      !Then call the subroutine
++      IF ( LNBO )CALL output_NBO(WDES,W,LATT_INI,T_INFO,P,CQIJ)
++
++  ENDIF wrtnbo
+ 
+ 
+ #ifdef VASP_HDF5
