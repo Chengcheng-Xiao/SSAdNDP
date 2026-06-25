@@ -207,7 +207,8 @@ SUBROUTINE write_NBO_output(NBO_fn,mat_fn,AO_basis,index_l)
   !Not all l-vectors are used, only those corresponding to neighboring unit  cells 
   nneigh = 1
   DO j=1,3 !Don't want any neighbors if there is only one k-point along that direction though.
-     IF( kdim(j).GT.1 )nneigh=nneigh*3
+     IF( kdim(j).GT.1 )nneigh=nneigh*5 !!!TRG: we changed this in order to account
+                                       !!! for the second layer of neighbouring cells
   ENDDO
   WRITE(55,'(I8,A4)')nneigh,'#ng'
   WRITE(55,'(I8,A4)')nkpts,'#nk'
@@ -291,7 +292,7 @@ SUBROUTINE write_NBO_output(NBO_fn,mat_fn,AO_basis,index_l)
         DO i=1,3 !Generalize old surface test to all dimensions
            IF( kdim(i).EQ.1 .AND. index_l(i,l_half-j).NE.0 )GOTO 55
         ENDDO
-        IF( MAXVAL(ABS(index_l(:,l_half-j))) < 2 )THEN
+        IF( MAXVAL(ABS(index_l(:,l_half-j))) < 3 )THEN !!!TRG: we changed this (2 to 3) in order to account for the second layer of neighbouring cells; limits abs indexg values to < 3
            WRITE(55,'(3I3)')index_l(:,l_half - j)
            WRITE(55,'(3I3)')index_l(:,l_half + j)
         ENDIF
